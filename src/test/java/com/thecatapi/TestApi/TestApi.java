@@ -1,6 +1,8 @@
 package com.thecatapi.TestApi;
 
+import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static io.restassured.RestAssured.given;
@@ -11,10 +13,15 @@ public class TestApi {
     private String vote_id;
     private String favourite_id;
 
+    @BeforeClass
+    public static void urlBase() {
+        RestAssured.baseURI = "https://api.thecatapi.com/v1/";
+    }
+
     @Test
     public void cadastro() {
 
-        final String url = "https://api.thecatapi.com/v1/user/passwordlesssignup";
+        final String url = "user/passwordlesssignup";
         final String corpoCadastro =
                 "{ \"email\": \"dernival.liandro@foton.la\", \"appDescription\": \"Test Api\", \"details\": { \"user_type\": \"personal\"}}";
 
@@ -23,15 +30,13 @@ public class TestApi {
                 .body(corpoCadastro)
                 .when().post(url);
 
-        response.then().body("message", containsString("SUCCESS")).statusCode(200);
-
-        System.out.println("Retorno do cadastro " + response.body().asString());
+        validacao(response);
 
     }
 
     public void votacao() {
 
-        final String url = "https://api.thecatapi.com/v1/votes/";
+        final String url = "votes/";
         final String corpoVoto = "{\"image_id\": \"61h\", \"value\": \"true\", \"sub_id\": \"demo-c26f9f\"}";
 
         Response response = given()
@@ -39,9 +44,8 @@ public class TestApi {
                 .body(corpoVoto)
                 .when().post(url);
 
-        response.then().body("message", containsString("SUCCESS")).statusCode(200);
+        validacao(response);
 
-        System.out.println("Retorno da votacao " + response.body().asString());
         String id = response.jsonPath().getString("id");
         vote_id = id;
         System.out.println("ID da votacao " + id);
@@ -50,7 +54,7 @@ public class TestApi {
 
     public void deletaVoto() {
 
-        final String url = "https://api.thecatapi.com/v1/votes/{vote_id}";
+        final String url = "votes/{vote_id}";
 
         Response response = given()
                 .contentType("application/json")
@@ -58,9 +62,7 @@ public class TestApi {
                 .pathParam("vote_id", vote_id)
                 .when().delete(url);
 
-        System.out.println("Retorno da delecao do voto " + response.body().asString());
-
-        response.then().body("message", containsString("SUCCESS")).statusCode(200);
+        validacao(response);
 
     }
 
@@ -72,7 +74,7 @@ public class TestApi {
 
     public void favoritar() {
 
-        final String url = "https://api.thecatapi.com/v1/favourites";
+        final String url = "favourites";
         final String corpoFavorito = "{\"image_id\": \"bt0\", \"sub_id\": \"demo-c26f9f\"}";
 
         Response response = given()
@@ -81,9 +83,8 @@ public class TestApi {
                 .body(corpoFavorito)
                 .when().post(url);
 
-        response.then().body("message", containsString("SUCCESS")).statusCode(200);
+        validacao(response);
 
-        System.out.println("Retorno da votacao " + response.body().asString());
         String id = response.jsonPath().getString("id");
         favourite_id = id;
         System.out.println("ID da votacao " + id);
@@ -92,7 +93,7 @@ public class TestApi {
 
     public void deletaFavorito() {
 
-        final String url = "https://api.thecatapi.com/v1/favourites/{favourite_id}";
+        final String url = "favourites/{favourite_id}";
 
         Response response = given()
                 .contentType("application/json")
@@ -100,9 +101,7 @@ public class TestApi {
                 .pathParam("favourite_id", favourite_id)
                 .when().delete(url);
 
-        System.out.println("Retorno da delecao do voto " + response.body().asString());
-
-        response.then().body("message", containsString("SUCCESS")).statusCode(200);
+        validacao(response);
 
     }
 
@@ -110,6 +109,11 @@ public class TestApi {
     public void executarFavoritarDeletar() {
         favoritar();
         deletaFavorito();
+    }
+
+    public void validacao(Response response) {
+        System.out.println("Retorno da delecao do voto " + response.body().asString());
+        response.then().body("message", containsString("SUCCESS")).statusCode(200);
     }
 
 }
